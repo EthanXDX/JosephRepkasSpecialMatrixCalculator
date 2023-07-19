@@ -1,6 +1,6 @@
-#include "../lib/joemat/src/headers/lin_alg.h"
-#include "../lib/joemat/src/headers/lie_algebra.h"
-#include "../lib/joemat/src/headers/compat.h"
+#include "../lib/src/headers/lin_alg.h"
+#include "../lib/src/headers/lie_algebra.h"
+#include "../lib/src/headers/compat.h"
 
 #include <iostream>
 #include <fstream>

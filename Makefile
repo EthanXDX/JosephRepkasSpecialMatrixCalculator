@@ -86,12 +86,12 @@ bin/joemat.o: src/main.cpp bin/library.a
 	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 build_library:
-	make all -C lib/joemat
+	make all -C lib
 	echo "library compiled"
-	cp lib/joemat/out/library.a bin/library.a
+	cp lib/out/library.a bin/library.a
 
 exec: build_library bin/joemat.o
 
 clean:
 	rm -r bin/*
-	rm lib/joemat/out/*
+	rm lib/out/*

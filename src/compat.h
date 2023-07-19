@@ -8,7 +8,7 @@ using std::vector;
 using std::list;
 using std::string;
 
-#include "../lib/joemat/src/headers/lie_algebra.h"
+#include "../lib/src/headers/lie_algebra.h"
 // #include "<library/lie_algebra>"
 
 #include <ginac/matrix.h>
