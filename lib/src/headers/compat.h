@@ -149,6 +149,6 @@ string replace(string target, string oldseg, string newseg);
 void ltrim(string &s);
 void rtrim(string &s);
 void trim(string &s);
-void compress_whitespace_and_newlines(string &s);
+void compress_spaces_and_newlines(string &s);
 
 #endif // COMPAT_H

@@ -7,9 +7,8 @@ g::symtab table;
 parser reader(table);
 
 g::matrix toMatrix(string str) {
-    compress_whitespace_and_newlines(str);
+    compress_spaces_and_newlines(str);
     string meat = str.substr(1, str.size() - 2);
-    //std::cout << meat << std::endl;
     vector<string> rows = split(meat, ";");
 
     // Make it into a 2d string vector ....
@@ -54,7 +53,7 @@ string toString(g::matrix a) {
 }
 
 vector<g::matrix> toMatrixSequence(string str) {
-    compress_whitespace_and_newlines(str);
+    compress_spaces_and_newlines(str);
     vector<string> matrixStrings = split(str, "\n");
 
     vector<g::matrix> seq = vector<g::matrix>();
@@ -80,7 +79,7 @@ string toString(vector<g::matrix> seq) {
 }
 
 lie_algebra* toLieAlgebra(string str) {
-    compress_whitespace_and_newlines(str);
+    compress_spaces_and_newlines(str);
     vector<g::matrix> generators = toMatrixSequence(str);
     lie_algebra* l = new lie_algebra(generators, false);
     return l;
@@ -92,7 +91,7 @@ string toString(lie_algebra* l) {
 }
 
 vector<lie_algebra*> toLieAlgebraSequence(string str) {
-    compress_whitespace_and_newlines(str);
+    compress_spaces_and_newlines(str);
     vector<string> algebraStrings = split(str, "\n@\n");
 
     vector<lie_algebra*> seq = vector<lie_algebra*>();
@@ -219,11 +218,11 @@ void trim(string &s) {
     ltrim(s);
 }
 
-bool BothAreWhitespace(char lhs, char rhs) { return std::isspace(lhs) && std::isspace(rhs); }
-bool BothAreNewlines(char lhs, char rhs) { return (lhs == rhs) && (lhs == '\n'); }
+bool BothAreSpaces(char lhs, char rhs) { return (lhs == rhs) && (lhs == ' '); }
+bool BothAreNewlines(char lhs, char rhs) { return (lhs == rhs) && (rhs == '\n'); }
 
-void compress_whitespace_and_newlines(string &s) {
-    std::string::iterator new_end = std::unique(s.begin(), s.end(), BothAreWhitespace);
+void compress_spaces_and_newlines(string &s) {
+    std::string::iterator new_end = std::unique(s.begin(), s.end(), BothAreSpaces);
     s.erase(new_end, s.end());
     new_end = std::unique(s.begin(), s.end(), BothAreNewlines);
     s.erase(new_end, s.end());

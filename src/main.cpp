@@ -14,10 +14,9 @@ int main(int argc, char* argv[]) {
     string output_path = get_cmd_option_fallback(input, "-o", "output.csv");
 
     string matrixInput = get_file_contents(input_path);
-    algebraSeq = toLieAlgebraSequence(matrixInput);
-    
     matrixInput = replace(matrixInput, "\r", "");
-    compress_whitespace_and_newlines(matrixInput);
+    compress_spaces_and_newlines(matrixInput);
+    algebraSeq = toLieAlgebraSequence(matrixInput);
     rawAlgebraStrings = split(matrixInput, "\n@\n");
 
     // Initialize lines (makes later code simpler)
