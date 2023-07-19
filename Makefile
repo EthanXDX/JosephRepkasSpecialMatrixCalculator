@@ -78,11 +78,17 @@
 # 	mkdir -p bin/shared
 # 	rm lib/joemat/out/*
 
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	CFLAGS := -std=c++17 -arch x86_64
+	LDFLAGS := -lginac -lcln -lgmp -static-libstdc++
+else
+	CFLAGS := -std=c++17
+	LDFLAGS := -Wl,-Bstatic -lginac -lcln -lgmp -static-libstdc++
+endif
 
-CFLAGS :=  -std=c++17
-LDFLAGS := -Wl,-Bstatic -lginac -lcln -lgmp -static-libstdc++
 
-bin/joemat.o: src/main.cpp bin/library.a
+bin/joemat: src/main.cpp bin/library.a
 	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 build_library:
