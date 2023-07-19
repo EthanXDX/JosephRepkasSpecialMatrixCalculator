@@ -26,8 +26,11 @@ out/example.o: src/example.cpp out/library.a #out/library.a
 	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 #mv $@ out/$@
 
+mkdirOut:
+	mkdir out
+
 .PHONY: all test clear
-all: out/utils.o out/lin_alg.o out/lie_algebra.o out/library.a
+all: mkdirOut out/utils.o out/lin_alg.o out/lie_algebra.o out/library.a
 test: out/test.o
 example: out/example.o
 clear:

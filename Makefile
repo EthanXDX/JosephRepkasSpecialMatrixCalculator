@@ -90,7 +90,10 @@ build_library:
 	echo "library compiled"
 	cp lib/out/library.a bin/library.a
 
-exec: build_library bin/joemat.o
+mkdirBin:
+	mkdir bin
+
+exec: mkdirBin build_library bin/joemat.o
 
 clean:
 	rm -r bin/*
