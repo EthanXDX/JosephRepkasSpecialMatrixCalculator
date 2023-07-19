@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     string matrixInput = get_file_contents(input_path);
     algebraSeq = toLieAlgebraSequence(matrixInput);
     
-    replace(matrixInput, "\r", "");
+    matrixInput = replace(matrixInput, "\r", "");
     compress_whitespace_and_newlines(matrixInput);
     rawAlgebraStrings = split(matrixInput, "\n@\n");
 
