@@ -27,7 +27,7 @@ out/example.o: src/example.cpp out/library.a #out/library.a
 #mv $@ out/$@
 
 mkdirOut:
-	mkdir out
+	mkdir -p out
 
 .PHONY: all test clear
 all: mkdirOut out/utils.o out/lin_alg.o out/lie_algebra.o out/library.a

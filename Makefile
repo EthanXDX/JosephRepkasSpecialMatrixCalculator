@@ -91,7 +91,7 @@ build_library:
 	cp lib/out/library.a bin/library.a
 
 mkdirBin:
-	mkdir bin
+	mkdir -p bin
 
 exec: mkdirBin build_library bin/joemat.o
 
