@@ -9,7 +9,10 @@
 
 
 
-/** Lie subalgebra of sl(n) */
+/** Lie subalgebra of sl(n)
+ * @warning Results when inputting the zero subalgebra of sl(n) are sometimes wrong due to how the library keeps track
+ *          of which sl(n) is being worked on.
+ * */
 class lie_algebra { // We always refer the lie algebra we are working with L.
 
     private:

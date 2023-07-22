@@ -72,6 +72,9 @@ int lie_algebra::get_sl_size() const { return this->sl_size; }
 int lie_algebra::get_dim() const { return this->dim; }
 
 lie_algebra* lie_algebra::get_sl(int n) {
+    if (n == 0) {
+        return new lie_algebra({});
+    }
     if (lie_algebra::sl.has_value()) {
         if (lie_algebra::sl.value()->get_sl_size() == n) {
             return lie_algebra::sl.value();
@@ -100,10 +103,15 @@ lie_algebra* lie_algebra::get_sl(int n) {
     return out;
 }
 
-lie_algebra* lie_algebra::compute_centralizer() { //TODO: fix, broken
+lie_algebra* lie_algebra::compute_centralizer() { //TODO: fix, broken?
     if (this->centralizer.has_value()) {
         return this->centralizer.value();
     }
+
+    if (this->get_dim() == 0) {
+        return new lie_algebra({});
+    }
+
     // Let L have basis e_i.
     
     mat_vec out = compute_centralizer_element(this->basis[0], get_sl(this->get_sl_size())->get_basis()); // Sets out=C_{sl(n)}(e_1)
@@ -126,6 +134,10 @@ lie_algebra* lie_algebra::compute_normalizer() {
     // It is clear that N(L)=\bigcap_{j<= r} N(x,L,sl(n))=M_r
 
     // Sets out=N_{sl(n)}(e_1,L)=M_1
+
+    if (this->get_dim() == 0) {
+        return new lie_algebra({});
+    }
     mat_vec out = this->compute_normalizer_element(this->basis[0], get_sl(this->get_sl_size())->get_basis());
 
     for (int i = 1; i < this->dim; i++) {
@@ -255,10 +267,11 @@ std::vector< lie_algebra* > lie_algebra::compute_lower_central_series() {
     if (this->lower_central_series.has_value()) {
         return std::vector(this->lower_central_series.value());
     }
+
     std::vector< lie_algebra* > lower_central_series_out = std::vector< lie_algebra* >();
     int old_dim = this->dim;
     lie_algebra* C = this->compute_derived_subalgebra(); // Sets L^(1) = [L,L]
-    
+
     while(C->get_dim() != old_dim) { // Terminates when L^(n)=L^(n+1)
         lower_central_series_out.push_back(C);
         old_dim = C->get_dim(); // Updates old_dim -> dim L^(n)
@@ -268,8 +281,8 @@ std::vector< lie_algebra* > lie_algebra::compute_lower_central_series() {
     if(lower_central_series_out.empty()) { // This deals with the case [L,L]=L
         lower_central_series_out.push_back(C);
     }
-    
-    this->derived_series = stdx::optional<std::vector< lie_algebra* >>(lower_central_series_out); // Records the lower central series 
+
+    this->lower_central_series = stdx::optional<std::vector< lie_algebra* >>(lower_central_series_out); // Records the lower central series
     return std::vector(lower_central_series_out);
 }
 
