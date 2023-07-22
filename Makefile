@@ -90,7 +90,7 @@ else
 endif
 
 
-bin/joemat.o: src/main.cpp bin/library.a
+bin/$(OUTNAME): src/main.cpp bin/library.a
 	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 build_library:
