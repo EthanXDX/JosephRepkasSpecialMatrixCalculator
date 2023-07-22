@@ -1,6 +1,8 @@
 #include "main.h"
 
 vector<lie_algebra*> algebraSeq;
+vector<string> algebra_names;
+vector<string> algebra_inputs;
 vector<string> rawAlgebraStrings;
 vector<string> lines;
 
@@ -19,17 +21,64 @@ int main(int argc, char* argv[]) {
     algebraSeq = toLieAlgebraSequence(matrixInput);
     rawAlgebraStrings = split(matrixInput, "\n@\n");
 
+    vector<lie_algebra*> new_algebraSeq = vector<lie_algebra*>(algebraSeq);
+    vector<int> input_indices = {};
+
+    //Look for flags that modify what is done
+    bool derived = input.cmd_option_exists("--derived");
+    bool lower = input.cmd_option_exists("--lower");
+    bool include_basis = input.cmd_option_exists("--include-basis");
+    bool include_inputs = input.cmd_option_exists("--include-inputs");
+
+    if (derived || lower) {
+        for (int i = 0; i < algebraSeq.size(); i++) {//(lie_algebra* alg : algebraSeq) {
+            lie_algebra* alg = algebraSeq[i];
+
+            vector< lie_algebra* > derived_series = alg->compute_derived_series();
+            if (derived) {
+                new_algebraSeq.insert(new_algebraSeq.end(), derived_series.begin(), derived_series.end());
+            }
+            vector< lie_algebra* > lower_series = alg->compute_lower_central_series();
+            if (lower) {
+                new_algebraSeq.insert(new_algebraSeq.end(), lower_series.begin(),lower_series.end());
+            }
+
+            algebra_names.push_back(std::string ("Input ") +  std::to_string(i+1));
+            algebra_inputs.push_back(rawAlgebraStrings[i]);
+            if (derived) {
+                for (int j = 0; j < alg->compute_derived_series().size(); j++) {
+                    algebra_names.push_back(std::string ("Derived ") +  std::to_string(j+1));
+                    algebra_inputs.push_back("");
+                }
+            }
+            if (lower) {
+                for (int j = 0; j < alg->compute_lower_central_series().size(); j++) {
+                    algebra_names.push_back(std::string ("Lower ") +  std::to_string(j+1));
+                    algebra_inputs.push_back("");
+                }
+            }
+        }
+    } else {
+        for (int i = 0; i < algebraSeq.size(); i++) {
+            algebra_names.push_back(std::string ("Input ") +  std::to_string(i+1));
+            algebra_inputs.push_back(rawAlgebraStrings[i]);
+        }
+    }
+
+    algebraSeq = new_algebraSeq;
+
     // Initialize lines (makes later code simpler)
     for (int i = 0; i < algebraSeq.size() + 1; i++) {
         lines.push_back("");
     }
 
-    append_column("Raw Input", RawInputGetter);
-    append_column("Basis", BasisGetter);
+    append_column("Names", NameGetter);
+    if (include_inputs) append_column("Raw Input", RawInputGetter);
+    if (include_basis) append_column("Basis", BasisGetter);
     append_column("Dimension", DimGetter);
-    append_column("Normalizer", NormalizerGetter);
+    if (include_basis) append_column("Normalizer", NormalizerGetter);
     append_column("Normalizer Dimension", NormalizerDimGetter);
-    append_column("Centralizer", CentralizerGetter);
+    if (include_basis) append_column("Centralizer", CentralizerGetter);
     append_column("Centralizer Dimension", CentralizerDimGetter);
 
     std::ofstream output;
@@ -42,8 +91,12 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
+string NameGetter(int i) {
+    return algebra_names[i];
+}
+
 string RawInputGetter(int i) {
-    return rawAlgebraStrings[i];
+    return algebra_inputs[i];
 }
 
 string BasisGetter(int i) {
@@ -59,7 +112,7 @@ string NormalizerGetter(int i) {
 }
 
 string NormalizerDimGetter(int i) {
-    int dim = (algebraSeq[i]->compute_normalizer())->get_dim();
+    int dim = algebraSeq[i]->compute_normalizer()->get_dim();
     return std::to_string(dim);
 }
 
@@ -68,7 +121,7 @@ string CentralizerGetter(int i) {
 }
 
 string CentralizerDimGetter(int i) {
-    int dim = (algebraSeq[i]->compute_centralizer())->get_dim();
+    int dim = algebraSeq[i]->compute_centralizer()->get_dim();
     return std::to_string(dim);
 }
 

@@ -8,6 +8,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+string NameGetter(int i);
 string RawInputGetter(int i);
 string BasisGetter(int i);
 string DimGetter(int i);
