@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     algebraSeq = toLieAlgebraSequence(matrixInput);
     rawAlgebraStrings = split(matrixInput, "\n@\n");
 
-    vector<lie_algebra*> new_algebraSeq = vector<lie_algebra*>(algebraSeq);
+    vector<lie_algebra*> new_algebraSeq = vector<lie_algebra*>();
     vector<int> input_indices = {};
 
     //Look for flags that modify what is done
@@ -33,6 +33,7 @@ int main(int argc, char* argv[]) {
     if (derived || lower) {
         for (int i = 0; i < algebraSeq.size(); i++) {//(lie_algebra* alg : algebraSeq) {
             lie_algebra* alg = algebraSeq[i];
+            new_algebraSeq.push_back(alg);
 
             vector< lie_algebra* > derived_series = alg->compute_derived_series();
             if (derived) {
