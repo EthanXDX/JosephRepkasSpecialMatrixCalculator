@@ -82,13 +82,15 @@ UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS := -std=c++17 -arch x86_64
 	LDFLAGS := -lginac -lcln -lgmp -static-libstdc++
+	OUTNAME := joemat
 else
 	CFLAGS := -std=c++17
 	LDFLAGS := -Wl,-Bstatic -lginac -lcln -lgmp -static-libstdc++
+	OUTNAME := joemat.o
 endif
 
 
-bin/joemat: src/main.cpp bin/library.a
+bin/joemat.o: src/main.cpp bin/library.a
 	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 build_library:
@@ -96,7 +98,7 @@ build_library:
 	echo "library compiled"
 	cp lib/out/library.a bin/library.a
 
-exec: build_library bin/joemat
+exec: build_library bin/$(OUTNAME)
 
 clean:
 	rm -r lib/out
