@@ -15,6 +15,11 @@ namespace utils{
         }
     }
 
+    void print(g::ex &m){
+        m.print(g::print_python(std::cout));
+        std::cout << std::endl;
+    }
+
     void print_exvectors(std::vector< g::exvector > &v){
         for (g::exvector i : v){
             std::cout<<"(";

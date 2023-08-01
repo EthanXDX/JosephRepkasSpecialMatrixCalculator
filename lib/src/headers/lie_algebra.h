@@ -93,7 +93,8 @@ class lie_algebra { // We always refer the lie algebra we are working with L.
          */
         mat_vec extend_basis(lie_algebra* M);
 
-        /** Computes the minimum rank of elements of L
+        /** Computes the minimum rank of elements of L.
+        * @note A return value of 0 for a nonzero algebra means something is not working correctly.
         * @warning This is not currently working whatsoever
         */
         int min_rank();

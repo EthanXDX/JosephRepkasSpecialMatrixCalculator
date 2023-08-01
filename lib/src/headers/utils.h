@@ -15,6 +15,7 @@ namespace utils{
     void print_exvector(g::exvector &v);
     void print_column_matrices(mat_vec &v);
     void print_matrices(mat_vec m);
+    void print(g::ex &m);
 
     
     /** Tests if two matrices are equal. */

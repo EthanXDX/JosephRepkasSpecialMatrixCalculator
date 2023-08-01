@@ -372,4 +372,71 @@ namespace lin_alg{
 
         return equals(&A2, B);
     }
+
+    int ilog2(int n) {
+        int out = 0;
+        int m = n;
+        while (m != 0) {
+            m = m >> 1;
+            out++;
+        }
+        return out;
+    }
+
+    std::vector<int> b2_to_list(int b2){
+        std::vector<int> out;
+        int b = b2;
+        int i = 0;
+        while (b != 0) {
+            // std::cout << b << std::endl;
+            if (b % 2 != 0) {
+                out.push_back(i); 
+            }
+            b = b >> 1;
+            i++;
+        }
+        return out;
+    }
+
+    int bit_count(unsigned int u) { //https://stackoverflow.com/questions/8871204/count-number-of-1s-in-binary-representation
+         unsigned int uCount;
+
+         uCount = u - ((u >> 1) & 033333333333) - ((u >> 2) & 011111111111);
+         return ((uCount + (uCount >> 3)) & 030707070707) % 63;
+    }
+
+    g::ex get_minor(g::matrix M, int r, int row_b2, int col_b2) {
+        std::vector<int> rows = b2_to_list(row_b2);
+        std::vector<int> cols = b2_to_list(col_b2);
+
+        g::matrix N = {r,r};
+
+        for (int i = 0; i < r; i++) {
+            for (int j = 0; j < r; j++) {
+                N(i,j) = M(rows[i], cols[j]);
+            }
+        }
+
+        return N.determinant();
+    }
+
+    g::exvector get_minors(g::matrix M, int r) {
+        g::exvector out;
+        int n = 1, m;
+        while (ilog2(n) < M.rows()) {
+            m = 1;
+            // std::cout << n << " " << m << std::endl;
+            if (bit_count(n) == r) {
+                while (ilog2(m) < M.cols()) {
+                    // std::cout << n << " " << m << std::endl;
+                    if (bit_count(m) == r) {
+                        out.push_back(get_minor(M, r, n, m));
+                    }
+                    m++;
+                }
+            }
+            n++;
+        }
+        return out;
+    }    
 };

@@ -137,6 +137,10 @@ namespace lin_alg{
     bool equals(std::vector< g::exvector >* A, std::vector< g::exvector >* B);
     bool equals(mat_vec* A, mat_vec* B);
     bool equals(mat_vec* A, std::vector< g::exvector >* B);
+
+
+    g::ex get_minor(g::matrix M, int r, int row_b2, int col_b2); // Gets the minor associated to the rows and cols one-hot encoddded inw row_b2 and col_b2
+    g::exvector get_minors(g::matrix M, int r); // Gets all rxr minors of M
 };
 
 #endif //JOEMATRIXCALC_LIN_ALG_H

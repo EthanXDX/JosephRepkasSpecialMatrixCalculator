@@ -29,6 +29,8 @@ int main(int argc, char* argv[]) {
     bool lower = input.cmd_option_exists("--lower");
     bool include_basis = input.cmd_option_exists("--include-basis");
     bool include_inputs = input.cmd_option_exists("--include-inputs");
+    bool compute_all_min_ranks = input.cmd_option_exists("--compute-all-min-rank");
+    bool compute_top_min_rank = input.cmd_option_exists("--compute-min-rank");
 
     if (derived || lower) {
         for (int i = 0; i < algebraSeq.size(); i++) {//(lie_algebra* alg : algebraSeq) {
@@ -81,6 +83,9 @@ int main(int argc, char* argv[]) {
     append_column("Normalizer Dimension", NormalizerDimGetter);
     if (include_basis) append_column("Centralizer", CentralizerGetter);
     append_column("Centralizer Dimension", CentralizerDimGetter);
+    if (compute_all_min_ranks) append_column("Minimum rank", MinimumRankGetter);
+    else if (compute_top_min_rank) append_column("Minimum rank", TopMinimumRankGetter);
+    append_column("Maximum rank", MaximumRankGetter);
 
     std::ofstream output;
     output.open(output_path);
@@ -124,6 +129,22 @@ string CentralizerGetter(int i) {
 string CentralizerDimGetter(int i) {
     int dim = algebraSeq[i]->compute_centralizer()->get_dim();
     return std::to_string(dim);
+}
+
+string MinimumRankGetter(int i) {
+    int min_rank = algebraSeq[i]->min_rank();
+    return std::to_string(min_rank);
+}
+
+string TopMinimumRankGetter(int i) {
+    if (algebra_names[i][0] != 'I') return "";
+    int min_rank = algebraSeq[i]->min_rank();
+    return std::to_string(min_rank);
+}
+
+string MaximumRankGetter(int i) {
+    int max_rank = algebraSeq[i]->max_rank();
+    return std::to_string(max_rank);
 }
 
 void append_column(string heading, std::function<string(int)> AlgebraInvariantGetter) {

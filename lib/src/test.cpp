@@ -534,7 +534,18 @@ void test_centralizer() {
     }
 }
 
+void test_minrank() {
+    g::symbol x("x");
+    lie_algebra* L5_1 = get_L5_1();
+    lie_algebra* L5_2 = get_L5_2();
+    lie_algebra* L5_4 = get_L5_4(x);
+    lie_algebra* L5_5 = get_L5_5(x);
 
+    std::cout << L5_1->min_rank() << std::endl;
+    std::cout << L5_2->min_rank() << std::endl;
+    std::cout << L5_4->min_rank() << std::endl;
+    std::cout << L5_5->min_rank() << std::endl;
+}
 
 int main() {
     // test_spanning_subsequence();
@@ -542,12 +553,14 @@ int main() {
     // test_get_sl(6);
     // test_bracket_algebra_sl_sl(6);
     // test_get_normalizer_element();
+    std::cout << "1 >> 1 is " << (1 >> 1) << std::endl;
     test_gaussian_elimination();
     test_nullspace();
     test_sl_ize();
     test_matricize();
     test_normalizer();
     test_centralizer();
+    test_minrank();
 
     // lie_algebra* alg = get_L5_1();
 

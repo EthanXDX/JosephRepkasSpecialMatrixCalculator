@@ -80,11 +80,11 @@
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
-	CFLAGS := -std=c++17 -arch x86_64
+	CFLAGS := -std=c++20 -arch x86_64
 	LDFLAGS := -lginac -lcln -lgmp -static-libstdc++
 	OUTNAME := joemat
 else
-	CFLAGS := -std=c++17
+	CFLAGS := -std=c++20
 	LDFLAGS := -Wl,-Bstatic -lginac -lcln -lgmp -static-libstdc++
 	OUTNAME := joemat.o
 endif

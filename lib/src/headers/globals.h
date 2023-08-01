@@ -39,6 +39,8 @@ namespace stdx {
 #include <ginac/operators.h>
 #include <ginac/ex.h>
 #include <ginac/parser.h>
+#include <ginac/normal.h>
+#include <ginac/relational.h>
 
 namespace g = GiNaC; 
 typedef std::vector< g::matrix > mat_vec;

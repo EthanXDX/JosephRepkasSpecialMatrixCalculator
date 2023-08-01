@@ -4,10 +4,10 @@ HEADERS=$(src/headers/)
 UNAME_S := $(shell uname -s)
 
 ifeq ($(UNAME_S),Darwin)
-	CFLAGS :=  -std=c++17 -arch x86_64
+	CFLAGS :=  -std=c++20 -arch x86_64
 	LDFLAGS := -Wl,-v -lginac -lcln -lgmp -static-libstdc++
 else
-	CFLAGS :=  -std=c++17
+	CFLAGS :=  -std=c++20
 	LDFLAGS := -Wl,-Bstatic -lginac -lcln -lgmp -static-libstdc++ # this is more portable, but idk if it will work for all installs
 endif
 
