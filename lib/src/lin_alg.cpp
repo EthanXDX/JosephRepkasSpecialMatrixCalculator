@@ -121,7 +121,6 @@ namespace lin_alg{
         }
 
         temp = gaussian_elimination(temp);
-        // utils::print_matrix(temp);
         mat_vec rtn; 
 
         int col = 0;
@@ -134,21 +133,6 @@ namespace lin_alg{
             }
             col++;
         }
-
-        // temp = gaussian_elimination(temp);
-        // mat_vec rtn; 
-        // int csd = 0;
-        // for(int i = 0; i < temp.cols(); i++){
-        //     for(int j = csd; j < temp.rows(); j++){
-        //         if(!temp(j,i).is_zero()){
-        //             csd++;
-        //             rtn.push_back(matrices[i]);
-        //             break;
-        //         }
-             
-        //     }
-            
-        // }
         return rtn;
 
     }
@@ -388,7 +372,6 @@ namespace lin_alg{
         int b = b2;
         int i = 0;
         while (b != 0) {
-            // std::cout << b << std::endl;
             if (b % 2 != 0) {
                 out.push_back(i); 
             }
@@ -423,12 +406,10 @@ namespace lin_alg{
     g::exvector get_minors(g::matrix M, int r) {
         g::exvector out;
         int n = 1, m;
-        while (ilog2(n) < M.rows()) {
+        while (ilog2(n) <= M.rows()) {
             m = 1;
-            // std::cout << n << " " << m << std::endl;
             if (bit_count(n) == r) {
-                while (ilog2(m) < M.cols()) {
-                    // std::cout << n << " " << m << std::endl;
+                while (ilog2(m) <= M.cols()) {
                     if (bit_count(m) == r) {
                         out.push_back(get_minor(M, r, n, m));
                     }

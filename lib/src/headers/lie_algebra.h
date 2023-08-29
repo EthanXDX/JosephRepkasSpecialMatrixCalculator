@@ -19,6 +19,7 @@ class lie_algebra { // We always refer the lie algebra we are working with L.
         int sl_size;
         int dim; /** Dimension of the lie algebra, L */
         mat_vec basis; /** Basis for sub algebra of sl(n).*/
+        std::vector< g::symbol > symbols; /** Symbols for basis of L. */
         stdx::optional< std::vector< lie_algebra* > > derived_series;
         stdx::optional< std::vector< lie_algebra* > > lower_central_series;
         stdx::optional< lie_algebra* > normalizer;
@@ -33,7 +34,7 @@ class lie_algebra { // We always refer the lie algebra we are working with L.
          *
          * @note ensure all elements of generators are square matrices of the same size
          */
-        lie_algebra(mat_vec generators, bool _basis=false ); //algebra from generators (set basis to false if going from set of generators)
+        lie_algebra(mat_vec generators, bool _basis=false, std::vector< g::symbol > _symbols={} ); //algebra from generators (set basis to false if going from set of generators)
         /** DESTROYS the lie algebra after.*/
         ~lie_algebra();
 
@@ -117,6 +118,13 @@ lie_algebra* bracket_lie_algebras(lie_algebra* algebra1, lie_algebra* algebra2);
 // (index, sampleMatrices) nilpotent_index(); //TODO: figure out what this means
 // subspace? intersect(A,B); //TODO: figure out what this means
 // (int, int) minimum_rank_algorithm(, lie_algebra)
+g::ex get_leading_term(g::ex p, std::vector< g::symbol > t);
+g::exvector polynomial_divide(g::ex p, g::exvector g, std::vector< g::symbol > t); // Probably only works for complex rational polynomials.
+g::exvector get_groebner_basis(g::exvector g, std::vector< g::symbol > t);
+bool grob(g::exvector g, std::vector< g::symbol > t);
+g::ex S_function_from_Dummit_foot(g::ex f, g::ex g, std::vector< g::symbol > t);
 
+std::vector< g::symbol > get_expression_symbols(const g::ex & e);
+std::vector< g::symbol > remove_duplicate_symbols(std::vector< g::symbol > syms);
 
 #endif // JOEMATRIXCALC_LIEALGEBRA_H

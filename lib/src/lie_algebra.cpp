@@ -3,7 +3,7 @@
 
 // using namespace L;
 // namespace se = std::experimental;
-lie_algebra::lie_algebra(mat_vec generators, bool _basis) {
+lie_algebra::lie_algebra(mat_vec generators, bool _basis, std::vector< g::symbol > _symbols) {
     sl_size = 0;
     mat_vec new_basis = {};
     if(!generators.empty()) {
@@ -36,6 +36,7 @@ lie_algebra::lie_algebra(mat_vec generators, bool _basis) {
     lower_central_series = stdx::optional< std::vector< lie_algebra* > >();
     normalizer = stdx::optional< lie_algebra* >();
     centralizer = stdx::optional< lie_algebra* >();
+    symbols = _symbols;
 
 }
 
@@ -182,12 +183,7 @@ mat_vec lie_algebra::compute_normalizer_element(g::matrix x, mat_vec M) {
         alpha_to_sl.insert(alpha_to_sl.end(), temp_insert.begin(), temp_insert.end());
     }
 
-    assertm(alpha_to_sl.size() == sl_alg->get_dim() * sl_alg->get_dim(), "alpha_to_sl size is incorrect");
     g::matrix alpha_to_sl_matrix = lin_alg::matricize(alpha_to_sl, sl_alg->get_dim(), sl_alg->get_dim(), true);
-    assertm(alpha_to_sl_matrix.rows() == alpha_to_sl_matrix.cols(), "alpha_to_sl_matrix is not square");
-    std::string msg = "alpha_to_sl_matrix has rank " + std::to_string(lin_alg::rank(alpha_to_sl_matrix)) + " instead of " + std::to_string(alpha_to_sl_matrix.rows());
-    if (lin_alg::rank(alpha_to_sl_matrix) != alpha_to_sl_matrix.rows()) std::cout << msg << std::endl;
-    assert(lin_alg::rank(alpha_to_sl_matrix) == alpha_to_sl_matrix.rows());
     g::matrix sl_to_alpha = alpha_to_sl_matrix.inverse();
 
     // TODO: to save time we can precompute Id_{std_sl}^{alpha}, alpha, in compute_normalizer.
@@ -230,7 +226,6 @@ g::exvector polynomial_divide(g::ex p, g::exvector g, std::vector< g::symbol > t
     g::exvector q(g.size(), 0); // The quotient
     g::ex r = 0; // The remainder
     while ( !temp.normal().is_zero() ){
-        // std::cout << "BRUH" << std::endl;
         g::ex leading_term = get_leading_term(temp, t);
 
         g::ex quotient = 0;
@@ -238,19 +233,12 @@ g::exvector polynomial_divide(g::ex p, g::exvector g, std::vector< g::symbol > t
         int found_quotient = false;
         for (g::ex c : l){
             i++;
-            // std::cout << "Divide a" << std::endl;
             if (g::divide(leading_term, c, quotient)){
-                // std::cout << "Divide a successful" << std::endl;
                 found_quotient = true;
                 break;
-            } else {
-                // std::cout << "Divide a successful" << std::endl;
             }
         }
-        // utils::print(temp);
-        // utils::print(leading_term);
-        // utils::print(quotient);
-        // std::cout << i << std::endl;
+
         if (found_quotient){
             q[i] = q[i] + quotient;
             temp = temp - quotient * g[i];
@@ -260,13 +248,11 @@ g::exvector polynomial_divide(g::ex p, g::exvector g, std::vector< g::symbol > t
         }
     }
 
-    // std::cout << "Polynomial divided" << std::endl;
-
     q.push_back(r);
     return q;
 }
 
-g::ex S(g::ex f, g::ex g, std::vector< g::symbol > t){
+g::ex S_function_from_Dummit_foot(g::ex f, g::ex g, std::vector< g::symbol > t){
     g::ex f_leading_term = get_leading_term(f, t);
     g::ex g_leading_term = get_leading_term(g, t);
     g::ex monic_lcm = g::lcm(f_leading_term, g_leading_term);
@@ -286,13 +272,10 @@ g::exvector get_groebner_basis(g::exvector g, std::vector< g::symbol > t){
 
     bool grobed = false;
     while (!grobed){
-        // std::cout << "BRUH2" << std::endl;
         grobed = true;
         for (int i = 0; i < groebner_basis.size(); i++){
             for (int j = i + 1; j < groebner_basis.size(); j++){
-                // std::cout << "Divide b" << std::endl;
-                g::ex s = S(groebner_basis[i], groebner_basis[j], t);
-                // std::cout << "Divide b successful" << std::endl;
+                g::ex s = S_function_from_Dummit_foot(groebner_basis[i], groebner_basis[j], t);
                 s = polynomial_divide(s, groebner_basis, t).back();
                 if ( !s.is_zero() ){
                     grobed = false;
@@ -321,10 +304,6 @@ int lie_algebra::min_rank(){
     int matrix_size = this->sl_size;
     int n = this->get_dim();
 
-    if (n == 1) {
-        return lin_alg::rank(this->basis[0]);
-    }
-
     g::matrix lin_comb = {static_cast<unsigned int>(this->sl_size), static_cast<unsigned int>(this-> sl_size)};
     std::vector<g::symbol> symbols;
     for(int i = 0; i < n; i++){
@@ -332,22 +311,22 @@ int lie_algebra::min_rank(){
         symbols.push_back(t_i);
         lin_comb = lin_comb.add(this->basis[i].mul_scalar(t_i));
     }
+    std::vector<g::symbol> grob_symbols = get_expression_symbols(lin_comb); 
 
     for (int minor_size = 1; minor_size <= n; minor_size++) {
-        // std::cout << "sugma" << std::endl;
         g::exvector minors = lin_alg::get_minors(lin_comb, minor_size);
         for (g::symbol t : symbols) {
             g::exvector new_minors;
-            // std::cout << "uwu?" << std::endl;
-            std::transform(minors.begin(), minors.end(), std::back_inserter(new_minors), [t](g::ex c){return c.subs(t == 1).normal();});
-            // std::cout << "owo" << std::endl;
-            if ( !grob(new_minors, symbols) ){
+            for (g::ex c : minors){
+                new_minors.push_back(c.subs(t == 1).normal());
+            }
+            if ( !grob(new_minors, grob_symbols) ){
                 return minor_size - 1;
             }
             
             // M has a kxk nonsingular minor iff Rank(M) >= k
             // All kxk minors of M are singular iff Rank(M) < k
-            // grob(k)  iff the ideal generated by the determinants of all kxk minor is the unit ideal
+            // grob(k)  iff the ideal generated by the determinants of all kxk minors is the unit ideal
             //          iff there is no point such that all determinants are 0
             //          iff there is no matrix such that all kxk minors are singular 
             //          iff for all matrices, some kxk minor is nonsingular
@@ -356,6 +335,7 @@ int lie_algebra::min_rank(){
             // Thus if grob(k) and not grob(k+1), then minrank = k.
         }
     }
+    
     return 0;
 
 }
@@ -502,11 +482,6 @@ mat_vec lie_algebra::extend_basis(lie_algebra* M) {
     for(g::matrix v : M->basis) {
         vec_list.push_back(v);
     }
-    // std::reverse(vec_list.begin(), vec_list.end());
-    // utils::print_matrices(vec_list);
-    // std::reverse(vec_list.begin(), vec_list.end());
-    // mat_vec spannign_sdubsequence = lin_alg::spanning_subsequence(vec_list);
-    // utils::print_matrices(spannign_sdubsequence);
     return lin_alg::spanning_subsequence(vec_list);
 }
 
@@ -551,4 +526,28 @@ lie_algebra* bracket_lie_algebras(lie_algebra *algebra1, lie_algebra  *algebra2)
     basis = lin_alg::spanning_subsequence(basis);
     lie_algebra* out = new lie_algebra(basis, true);
     return out;
+}
+
+std::vector< g::symbol > get_expression_symbols(const g::ex & e)
+{
+    if (g::is_a<g::symbol>(e)) { 
+        return {g::ex_to<g::symbol>(e)};
+    } else {
+        std::vector< g::symbol > symbol_accumulator;
+        for (size_t i=0; i<e.nops(); i++) {
+            std::vector< g::symbol > temp = get_expression_symbols(e.op(i));
+            symbol_accumulator.insert(symbol_accumulator.end(), temp.begin(), temp.end());
+        }
+        return symbol_accumulator;
+    }
+}
+
+std::vector< g::symbol > remove_duplicate_symbols(std::vector< g::symbol > syms) {
+    std::vector< g::symbol > symbols;
+    for (g::symbol s : syms) {
+        if (std::find(symbols.begin(), symbols.end(), s) == symbols.end()) {
+            symbols.push_back(s);
+        }
+    }
+    return symbols;
 }

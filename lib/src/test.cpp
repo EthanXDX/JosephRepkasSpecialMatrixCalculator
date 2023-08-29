@@ -79,8 +79,6 @@ lie_algebra* get_L3_025_5() {
     mat_vec basis = mat_vec {m1,m2,m3};
     mat_vec brackets = {lin_alg::bracket(m1,m2), lin_alg::bracket(m2,m3), lin_alg::bracket(m1,m3)};
     g::matrix M = lin_alg::bracket(m1,m2).add(m2).sub(m3);
-    utils::print_matrix(M);
-    //utils::print_matrices(brackets);
     lie_algebra* L3 = new lie_algebra(basis);
     return L3;
 }
@@ -166,14 +164,6 @@ void test_get_normalizer_element() {
 
     mat_vec M = sl->get_basis();
     mat_vec normalizer = L->compute_normalizer_element(d, M);
-
-    // std::cout << "Printing d" << std::endl;
-    // utils::print_matrix(d);
-    // std::cout << "Printing basis of L" << std::endl;
-    // utils::print_matrices(L->get_basis());
-    // std::cout << "Printing dim of normalizer of d in M" << std::endl;
-    // // utils::print_matrices(normalizer);
-    // std::cout << normalizer.size() << std::endl;
 
     normalizer = L->compute_normalizer_element(a, M);
     std::cout << "Printing a" << std::endl;
@@ -541,19 +531,307 @@ void test_minrank() {
     lie_algebra* L5_4 = get_L5_4(x);
     lie_algebra* L5_5 = get_L5_5(x);
 
-    std::cout << L5_1->min_rank() << std::endl;
-    std::cout << L5_2->min_rank() << std::endl;
-    std::cout << L5_4->min_rank() << std::endl;
-    std::cout << L5_5->min_rank() << std::endl;
+    if (L5_1->min_rank() != 1) {
+        throw std::runtime_error("The minrank of L5_1 is wrong, it should be 1");
+    }
+    if (L5_2->min_rank() != 1) {
+        throw std::runtime_error("The minrank of L5_2 is wrong, it should be 1");
+    }
+    if (L5_4->min_rank() != 1) {
+        throw std::runtime_error("The minrank of L5_3 is wrong, it should be 1");
+    }
+    if (L5_5->min_rank() != 1) {
+        throw std::runtime_error("The minrank of L5_4 is wrong, it should be 1");
+    }
+}
+
+void test_get_leading_term() {
+    g::symbol x("x");
+    g::ex p = g::pow(x,3) + g::pow(x,2) - 2*x + 1;
+    g::ex q = g::pow(x,2) - 1;
+    g::ex h = -3 * g::pow(x,4) + 2*x;
+    g::ex f = 2 * g::pow(x,3) + 3 * x - 1;
+    g::symbol y("y");
+    g::ex r = g::pow(y,2) + 2 * y + 1 + x*y + y*y*y*3 - x*y*y*2;
+    g::ex s = y*y;
+
+    std::vector< g::symbol > x_vec = {x};
+    std::vector< g::symbol > y_vec = {x,y};
+
+    if (!get_leading_term(p,x_vec).is_equal(g::pow(x,3))) {
+        throw std::runtime_error("The leading term of p is wrong");
+    }
+    if (!get_leading_term(q,x_vec).is_equal(g::pow(x,2))) {
+        throw std::runtime_error("The leading term of q is wrong");
+    }
+    if (!get_leading_term(h,x_vec).is_equal(-3 * g::pow(x,4))) {
+        throw std::runtime_error("The leading term of h is wrong");
+    }
+    if (!get_leading_term(f,x_vec).is_equal(2 * g::pow(x,3))) {
+        throw std::runtime_error("The leading term of f is wrong");
+    }
+    if (!get_leading_term(r,y_vec).is_equal(  -2*x*g::pow(y,2))) {
+        throw std::runtime_error("The leading term of r is wrong");
+    }
+    if (!get_leading_term(s,y_vec).is_equal(  y*y)) {
+        throw std::runtime_error("The leading term of s is wrong");
+    }
+}
+
+void test_polynomial_divide_one_var() {
+    g::symbol x("x");
+    g::ex p = g::pow(x,3) + g::pow(x,2) - 2*x + 1;
+    g::ex q = g::pow(x,2) - 1;
+    g::exvector q_vec = {q};
+    std::vector< g::symbol > x_vec = {x};
+    g::exvector out = polynomial_divide(p,q_vec,x_vec);
+    
+    if(!out[0].is_equal(x+1)) {
+        throw std::runtime_error("The univariate polynomial didn't divide properly");
+    }
+
+    if(!out[1].is_equal(2-x)) {
+        throw std::runtime_error("The univariate polynomials didn't divide properly");
+    }
+
+    p = 1;
+    q = 2;
+    out = polynomial_divide(p,{q},{x});
+    
+    if(!out[0].is_equal(1.0/2.0)) {
+        throw std::runtime_error("The univariate polynomial didn't divide properly");
+    }
+
+    if(!out[1].is_equal(0)) {
+        throw std::runtime_error("The univariate polynomials didn't divide properly");
+    }
+}
+
+void test_polynomial_divide_two_var() {
+    g::symbol x("x"); 
+    g::symbol y("y");
+    
+    // g::ex p = g::pow(x,3)*g::pow(y,2)-2*g::pow(x,3)+g::pow(x,2)*y+x*y+1;
+    g::ex p = x*x + x - y*y + y;
+    g::exvector q_vec = {x*y + 1, x + y};
+    std::vector< g::symbol > var_vec = {x,y};
+    g::exvector out = polynomial_divide(p,q_vec,var_vec);
+
+    if(!out[0].is_equal(-1)) {
+        throw std::runtime_error("The duovariate polynomial didn't divide properly");
+    }
+    if(!out[1].is_equal(x + 1)) {
+        throw std::runtime_error("The duovariate polynomials didn't divide properly");
+    }
+    if(!out[2].is_equal(-y*y + 1)) {
+        throw std::runtime_error("The duovariate polynomials didn't divide properly");
+    }
+
+    q_vec = {x + y, x*y + 1};
+    var_vec = {x,y};
+    out = polynomial_divide(p,q_vec,var_vec);
+
+    if(!out[0].is_equal(x-y+1)) {
+        throw std::runtime_error("The duovariate polynomial didn't divide properly");
+    }
+    if(!out[1].is_equal(0)) {
+        throw std::runtime_error("The duovariate polynomials didn't divide properly");
+    }
+    if(!out[2].is_equal(0)) {
+        throw std::runtime_error("The duovariate polynomials didn't divide properly");
+    }
+}
+
+void test_polynomial_divide_three_var() {
+    g::symbol x("x"); 
+    g::symbol y("y"); 
+    g::symbol z("z");
+    
+    g::ex p = z*y*x*x - 2*x*y*y + x*z*y - y*z + 3*x - z + 2;
+    g::exvector q_vec = {x,y,z};
+    std::vector< g::symbol > var_vec = {x,y,z};
+    g::exvector out = polynomial_divide(p,q_vec,var_vec);
+
+    if(!out[0].is_equal(x*z*y-2*y*y+z*y+3)) {
+        throw std::runtime_error("The trivariate polynomial didn't divide properly");
+    }
+    if(!out[1].is_equal(-z)) {
+        throw std::runtime_error("The trivariate polynomials didn't divide properly");
+    }
+    if(!out[2].is_equal(-1)) {
+        throw std::runtime_error("The trivariate polynomials didn't divide properly");
+    }
+    if(!out[3].is_equal(2)) {
+        throw std::runtime_error("The trivariate polynomials didn't divide properly");
+    }    
+}
+
+
+void test_polynomial_divide_dividend_lower_deg() {
+    g::symbol x("x"); 
+    g::symbol y("y"); 
+    
+    g::ex p = x - y + 1;
+    g::exvector q_vec = {x*x - y, y*y};
+
+    g::exvector out = polynomial_divide(p,q_vec,{x,y});
+
+    if(!out[0].is_equal(0)) {
+        throw std::runtime_error("The polynomial didn't divide properly by the lower degree polynomial (1.1)");
+    }
+    if(!out[1].is_equal(0)) {
+        throw std::runtime_error("The polynomial didn't divide properly by the lower degree polynomial (1.2)");
+    }
+    if(!out[2].is_equal(p)) {
+        throw std::runtime_error("The polynomial didn't divide properly by the lower degree polynomial (1.3)");
+    }
+
+    p = 1;
+    q_vec = {x*x - y, y*y, 3};
+    
+    out = polynomial_divide(p,q_vec,{x,y});
+
+    if(!out[0].is_equal(0)) {
+        throw std::runtime_error("The polynomial didn't divide properly by the lower degree polynomial (2.1)");
+    }
+    if(!out[1].is_equal(0)) {
+        throw std::runtime_error("The polynomial didn't divide properly by the lower degree polynomial (2.2)");
+    }
+    g::ex l = 1;
+    g::ex lll = 3;
+    g::ex llll = l/lll;
+    if(!out[2].is_equal(llll)) {
+        throw std::runtime_error("The polynomial didn't divide properly by the lower degree polynomial (2.3)");
+    }
+    if(!out[3].is_equal(0)) {
+        throw std::runtime_error("The polynomial didn't divide properly by the lower degree polynomial (2.4)");
+    }
+}
+
+void test_polynomial_divide() {
+    test_polynomial_divide_one_var();
+    test_polynomial_divide_two_var();
+    test_polynomial_divide_three_var();
+    test_polynomial_divide_dividend_lower_deg();
+}
+
+void test_S() {
+    g::symbol x("x"); 
+    g::symbol y("y"); 
+    g::symbol z("z");
+
+    g::ex p = y*x*x - 2*x*y*y + x*z*y - y*z + 3*x - z + 2;
+    g::ex q = z*x + x - y*y + y - 4;
+
+    g::ex out = S_function_from_Dummit_foot(p,q,{x,y,z});
+    g::ex answer = -x*x*y + x*y*y*y - 2*x*y*y*z - x*y*y + x*y*z*z + 4*x*y + 3*x*z - y*z*z - z*z + 2*z;
+}
+
+void test_get_groebner_basis(){
+    g::symbol x("x"); 
+    g::symbol y("y");
+
+    g::ex f1 = x*x*x*y - x*y*y + 1;
+    g::ex f2 = x*x*y*y - y*y*y - 1;
+
+    std::vector< g::ex > out = get_groebner_basis({f1,f2},{x,y});
+
+    if(size(out) != 4) {
+        throw std::runtime_error("Groebner basis size is wrong");
+    }
+    if(!out[0].is_equal(f1)) {
+        throw std::runtime_error("Groebner basis is wrong");
+    }
+    if(!out[1].is_equal(f2)) {
+        throw std::runtime_error("Groebner basis is wrong");
+    }
+    if(!out[2].is_equal(x+y)) {
+        throw std::runtime_error("Groebner basis is wrong");
+    }
+    if(!out[3].is_equal(y*y*y*y - y*y*y - 1)) {
+        throw std::runtime_error("Groebner basis is wrong");
+    }   
+}
+
+void test_grob(){
+    g::symbol x("x");
+    g::symbol y("y");
+    g::symbol t_0("t_0");
+    g::symbol t_1("t_1");
+    g::symbol t_2("t_2");
+
+    g::exvector I1 = {x*x + y - x*y + 2, x*y + y*y - 2, x*x*x - y};                             // Contains 1
+    g::exvector I2 = {x*x + y - x*y + 2, x*x*x*x - x*y*y + 2*x*x + 2*y*y - 4*x + 4*y - 4};      // Does not contain 1
+    g::exvector I3 = {1};                                                                       // Contains 1
+    g::exvector I4 = {x * y + 1, x - 1, y - 1, x + y};                                          // Contains 1
+    g::exvector I5 = {x};                                                                       // Does not contain 1
+    g::exvector I6 = {x*x + 2*x - 1, x*x*x + 2*x + 1, x*x*x - x*x};                             // Contains 1
+    g::exvector I7 = {0, t_0, x, t_2, 0, 0, 0, 1+x, 0, 0, 0, t_0, 0, 0, 0, 0};                  // Contains 1
+
+    if(!grob(I1, {x,y})) {
+        throw std::runtime_error("I1 is actually grob.");
+    }
+    
+    if(grob(I2, {x,y})) {
+        throw std::runtime_error("I2 is actually not grob.");
+    }
+    
+    if(!grob(I3, {x,y})) {
+        throw std::runtime_error("I3 is actually grob.");
+    }
+    
+    if(!grob(I4, {x,y})) {
+        throw std::runtime_error("I4 is actually grob.");
+    }
+
+    if(grob(I5, {x,y})) {
+        throw std::runtime_error("I5 is actually not grob.");
+    }
+
+    if(!grob(I6, {x,y})) {
+        throw std::runtime_error("I6 is actually grob.");
+    }
+
+    if(!grob(I7, {t_0,t_1,t_2,x})) {
+        throw std::runtime_error("I7 is actually grob.");
+    }
+}
+
+void test_get_minors() {
+    g::symbol x("x");
+    g::matrix m = {{x + 1, 2, 0},{x, 1, 1},{0, x - 2, x*x}};
+    g::matrix m11 = {{1,1}, {x-2, x*x}};
+    g::matrix m12 = {{x,1}, {0, x*x}};
+    g::matrix m13 = {{x,1}, {0, x-2}};
+    g::matrix m21 = {{2,0}, {x-2,x*x}};
+    g::matrix m22 = {{x+1,0}, {0,x*x}};
+    g::matrix m23 = {{x+1,2}, {0,x-2}};
+    g::matrix m31 = {{2,0}, {1,1}};
+    g::matrix m32 = {{x+1,0}, {x,1}};
+    g::matrix m33 = {{x+1,2}, {x,1}};
+    std::vector< g::matrix > m_minors_matrices = {m33, m32, m31, m23, m22, m21, m13, m12, m11};
+    g::exvector m_minors = {};
+    for (g::matrix mat : m_minors_matrices) {
+        m_minors.push_back(mat.determinant());
+    }
+    g::exvector m_minors_out = lin_alg::get_minors(m, 2);
+    g::exvector m_minors_out1 = lin_alg::get_minors(m, 1);
+    g::exvector m_minors_out2 = lin_alg::get_minors(m, 3);
+        
+    if (size(m_minors_out) != 9) {
+        throw std::runtime_error("wrong number of minors");
+    }
+    for (int i = 0; i < 9; i ++){
+        if (m_minors_out[i].is_equal(m_minors[i]) == false) {
+            throw std::runtime_error("wrong minor at index " + std::to_string(i));
+        }
+    }
 }
 
 int main() {
-    // test_spanning_subsequence();
-    // test_lie_alg_equals();
-    // test_get_sl(6);
-    // test_bracket_algebra_sl_sl(6);
-    // test_get_normalizer_element();
-    std::cout << "1 >> 1 is " << (1 >> 1) << std::endl;
+    test_lie_alg_equals();
+    test_get_sl(6);
+    test_bracket_algebra_sl_sl(6);
     test_gaussian_elimination();
     test_nullspace();
     test_sl_ize();
@@ -561,11 +839,16 @@ int main() {
     test_normalizer();
     test_centralizer();
     test_minrank();
+    test_get_leading_term();
+    test_polynomial_divide();
+    test_get_groebner_basis();
+    test_S();
+    test_grob();
+    test_get_minors();
 
-    // lie_algebra* alg = get_L5_1();
-
-    // std::cout << alg->compute_normalizer()->get_dim() << std::endl;
-    // utils::print_matrices(alg->compute_normalizer()->get_basis());
+    // Do not run, only prints, no auto-tests for now
+    // test_spanning_subsequence();
+    // test_get_normalizer_element();
 
     return 0;
 }
