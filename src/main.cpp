@@ -21,7 +21,6 @@ int main(int argc, char* argv[]) {
     algebraSeq = toLieAlgebraSequence(matrixInput);
     rawAlgebraStrings = split(matrixInput, "\n@\n");
 
-    vector<lie_algebra*> new_algebraSeq = vector<lie_algebra*>();
     vector<int> input_indices = {};
 
     //Look for flags that modify what is done
@@ -33,6 +32,7 @@ int main(int argc, char* argv[]) {
     bool compute_top_min_rank = input.cmd_option_exists("--compute-min-rank");
 
     if (derived || lower) {
+        vector<lie_algebra*> new_algebraSeq = vector<lie_algebra*>();
         for (int i = 0; i < algebraSeq.size(); i++) {//(lie_algebra* alg : algebraSeq) {
             lie_algebra* alg = algebraSeq[i];
             new_algebraSeq.push_back(alg);
@@ -61,6 +61,7 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
+            algebraSeq = new_algebraSeq;
     } else {
         for (int i = 0; i < algebraSeq.size(); i++) {
             algebra_names.push_back(std::string ("Input ") +  std::to_string(i+1));
@@ -68,7 +69,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    algebraSeq = new_algebraSeq;
 
     // Initialize lines (makes later code simpler)
     for (int i = 0; i < algebraSeq.size() + 1; i++) {
